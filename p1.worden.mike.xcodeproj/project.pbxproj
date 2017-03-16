@@ -7,7 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F8BCFFB1E79A6CF003DF33A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BCFFA1E79A6CF003DF33A /* main.cpp */; };
+		0F8BD0061E79A725003DF33A /* manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0011E79A725003DF33A /* manager.c */; };
+		0F8BD0071E79A725003DF33A /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0021E79A725003DF33A /* client.c */; };
+		0F8BD0081E79A725003DF33A /* tracker.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0031E79A725003DF33A /* tracker.c */; };
+		0F8BD0091E79A725003DF33A /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0041E79A725003DF33A /* utility.c */; };
+		0F8BD00A1E79A725003DF33A /* init.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0051E79A725003DF33A /* init.c */; };
+		0F8BD00F1E79A7E2003DF33A /* proj1.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD00E1E79A7E2003DF33A /* proj1.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +29,13 @@
 
 /* Begin PBXFileReference section */
 		0F8BCFF71E79A6CF003DF33A /* p1.worden.mike */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = p1.worden.mike; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F8BCFFA1E79A6CF003DF33A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0F8BD0011E79A725003DF33A /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/manager.c; sourceTree = "<group>"; };
+		0F8BD0021E79A725003DF33A /* client.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = client.c; path = src/client.c; sourceTree = "<group>"; };
+		0F8BD0031E79A725003DF33A /* tracker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tracker.c; path = src/tracker.c; sourceTree = "<group>"; };
+		0F8BD0041E79A725003DF33A /* utility.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = utility.c; path = src/utility.c; sourceTree = "<group>"; };
+		0F8BD0051E79A725003DF33A /* init.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = init.c; path = src/init.c; sourceTree = "<group>"; };
+		0F8BD00B1E79A739003DF33A /* manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = manager.h; path = include/manager.h; sourceTree = "<group>"; };
+		0F8BD00E1E79A7E2003DF33A /* proj1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = proj1.c; path = src/proj1.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,9 +68,31 @@
 		0F8BCFF91E79A6CF003DF33A /* p1.worden.mike */ = {
 			isa = PBXGroup;
 			children = (
-				0F8BCFFA1E79A6CF003DF33A /* main.cpp */,
+				0F8BD00D1E79A749003DF33A /* include */,
+				0F8BD00C1E79A73E003DF33A /* src */,
 			);
 			path = p1.worden.mike;
+			sourceTree = "<group>";
+		};
+		0F8BD00C1E79A73E003DF33A /* src */ = {
+			isa = PBXGroup;
+			children = (
+				0F8BD0011E79A725003DF33A /* manager.c */,
+				0F8BD00E1E79A7E2003DF33A /* proj1.c */,
+				0F8BD0021E79A725003DF33A /* client.c */,
+				0F8BD0031E79A725003DF33A /* tracker.c */,
+				0F8BD0041E79A725003DF33A /* utility.c */,
+				0F8BD0051E79A725003DF33A /* init.c */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+		0F8BD00D1E79A749003DF33A /* include */ = {
+			isa = PBXGroup;
+			children = (
+				0F8BD00B1E79A739003DF33A /* manager.h */,
+			);
+			name = include;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +152,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F8BCFFB1E79A6CF003DF33A /* main.cpp in Sources */,
+				0F8BD00F1E79A7E2003DF33A /* proj1.c in Sources */,
+				0F8BD00A1E79A725003DF33A /* init.c in Sources */,
+				0F8BD0071E79A725003DF33A /* client.c in Sources */,
+				0F8BD0061E79A725003DF33A /* manager.c in Sources */,
+				0F8BD0091E79A725003DF33A /* utility.c in Sources */,
+				0F8BD0081E79A725003DF33A /* tracker.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
