@@ -140,7 +140,7 @@ void launch_tracker( int manager_port) {
 
     // initialize this with size of a sockaddr_in
     client_addr_length = sizeof(client_addr);
-
+    TDEBUG_PRINT(("Tracker:  Entering Listen Loop\n "));
     while (1){
         bzero(buffer, BUFSIZE);
         bytes_recieved = (int)recvfrom(socket_desc, buffer, BUFSIZE, 0,

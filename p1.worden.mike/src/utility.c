@@ -73,8 +73,24 @@ void copy_client(struct client *from_client, struct client *to_client) {
 /******************************************************************************
  * check_agent_status:   Dump our struct into a char buf for transport
  ******************************************************************************/
-bool check_agent_status (struct client_args *clients) {
-    return false;
+bool terminate_manager_check (struct client_args *clients) {
+    int num_clients_configured=0;
+    int num_clients_enabled=0;
+    
+    for (int i =0; i<MAX_CLIENTS; i++) {
+        if (clients->client_list[i].enabled == true)
+            num_clients_enabled++;
+        if (clients->client_list[i].configured == true){
+            num_clients_configured++;
+        }
+        
+        
+    }
+        if (num_clients_configured == (num_clients_enabled)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /******************************************************************************
@@ -84,9 +100,10 @@ bool check_agent_status (struct client_args *clients) {
 void client_record_serialization(char struct_data[5000], struct client *client_record){
 
 // Hate sprintf!
-sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_record->has_task,
+    int foo=7;
+sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_record->has_task,
     client_record->node_id,client_record->packet_delay, client_record->packet_drop_percentage,client_record->task_share,
-    client_record->task_start_time, client_record->filename);
+    client_record->task_start_time, foo, client_record->filename);
 
 }
 
@@ -96,7 +113,7 @@ sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_
 ******************************************************************************/
 void client_record_deserialization(char struct_data[5000], struct client *client_record){
 
-    char *field[8];
+    char *field[9];
     int index = 0;
 
     char *token;
@@ -118,6 +135,7 @@ void client_record_deserialization(char struct_data[5000], struct client *client
     client_record->packet_drop_percentage = (int)strtol(field[4],NULL,10);
     client_record->task_share=(int)strtol(field[5],NULL,10);
     client_record->task_start_time=(int)strtol(field[6],NULL,10);
+    client_record->tracker_port = (int)strtol(field[7], NULL, 10);
     client_record->filename = malloc(strlen(field[7]) +1 );
     client_record->filename = field[7];
 

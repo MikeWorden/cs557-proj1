@@ -139,8 +139,9 @@ void launch_client( int manager_port,  int client_id) {
     
     init_client(&tmp_client);
     client_record_deserialization(client_message, &tmp_client);
-    read_size = recv(client_sockfd , client_message , sizeof(client_message) , 0);
-    tracker_port = (int)strtol(client_message,NULL,10);
+    //read_size = recv(client_sockfd , client_message , sizeof(client_message) , 0);
+    //tracker_port = (int)strtol(client_message,NULL,10);
+    tracker_port = tmp_client.tracker_port;
     CDEBUG_PRINT(("Client:  Tracker port is %d\n", tracker_port));
 
     //dummy logic to make read_size warning go away

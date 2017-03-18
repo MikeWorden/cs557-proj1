@@ -39,7 +39,7 @@
 # define MDEBUG_PRINT(x) do {} while (0)
 #endif
 
-//#define TRACKER_DEBUG 1
+#define TRACKER_DEBUG 1
 #ifdef TRACKER_DEBUG
 # define TDEBUG_PRINT(x) printf x
 #else
@@ -73,6 +73,7 @@ struct client {
 		bool has_task;
 		int  task_start_time;
 		int  task_share;
+        int  tracker_port;
 };
 
 // Struct to pass data to the connection manager on the manager process
@@ -94,7 +95,7 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
 void client_record_serialization(char struct_data[5000], struct client *client_record);
 void client_record_deserialization(char struct_data[5000], struct client *client_record);
 
-bool check_agent_status (struct client_args *clients);
+bool terminate_manager_check (struct client_args *clients);
 
 void launch_tracker( int manager_port);
 

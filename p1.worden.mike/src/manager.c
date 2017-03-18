@@ -25,7 +25,7 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
     int client_pid;
     //int client_pid;
     struct sockaddr_in server ;
-    bool all_configurations_delivered = false;
+    bool terminate_manager = false;
 
 
     //Create socket
@@ -116,7 +116,7 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
 
         
         
-        while( (!all_configurations_delivered) && (client_sock = accept(socket_desc, NULL, NULL)) )
+        while( (!terminate_manager) && (client_sock = accept(socket_desc, NULL, NULL)) )
         {
             MDEBUG_PRINT(("Manager:  Connection accepted by Manager\n"));
 
@@ -134,9 +134,13 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
 
             //Now join the thread , so that we dont terminate before the thread ends
             //Wait:  For this scale server, this isn't an issue.
-            //pthread_join( sniffer_thread , NULL);
+            pthread_join( manager_thread , NULL);
             MDEBUG_PRINT(("Manager:  Handler assigned\n"));
-            all_configurations_delivered = check_agent_status(client_list);
+            terminate_manager = terminate_manager_check(client_list);
+            if (terminate_manager == true ) {
+                printf("**********TERMINATING MANAGER************\n");
+                terminate_manager = false;
+            }
             
         }
 
@@ -245,7 +249,7 @@ void *manager_connection_handler(void *args)
             
             
         }
-        MDEBUG_PRINT(("Manager:  %d Tracker and %d out of %d Clients configured\n", num_trackers_configured, num_clients_configured, num_clients_enabled));
+        
         // Error handling
         if(read_size == 2)
         {

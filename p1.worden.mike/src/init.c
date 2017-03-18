@@ -49,6 +49,7 @@ void init( struct client *clients, int *num_clients, int *timeout)
 
     for (int i = 0; i < MAX_CLIENTS; i++ ) {
         clients[i].enabled = false;
+        clients[i].configured = false;
         clients[i].filename = "----";
         clients[i].has_task = false;
         clients[i].node_id = -1;
