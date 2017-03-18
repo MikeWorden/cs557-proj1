@@ -15,7 +15,7 @@ void init_client(struct client *client) {
 
     client->enabled = false;
     client->configured = false;
-    client->filename = "----";
+    strncpy(client->filename, "----", sizeof(client->filename));
     client->has_task = false;
     client->node_id = -1;
     client->packet_delay = -1;
@@ -41,6 +41,8 @@ void init( struct client *clients, int *num_clients, int *timeout)
 
 
 
+    
+
 	*num_clients = 0;
 	*timeout = 0;
 
@@ -50,15 +52,14 @@ void init( struct client *clients, int *num_clients, int *timeout)
     for (int i = 0; i < MAX_CLIENTS; i++ ) {
         clients[i].enabled = false;
         clients[i].configured = false;
-        clients[i].filename = "----";
+        strncpy(clients[i].filename, "------", sizeof(clients[i].filename));
         clients[i].has_task = false;
-        clients[i].node_id = -1;
+        clients[i].node_id = i;
         clients[i].packet_delay = -1;
         clients[i].packet_drop_percentage = 100;
         clients[i].task_share = 0;
         clients[i].task_start_time = 1;
     }
-
 
 	in_file = fopen(FILE_NAME, "r");
 	if (in_file == NULL) {
@@ -94,8 +95,10 @@ void init( struct client *clients, int *num_clients, int *timeout)
 					client_id = atoi(param1);
 					MDEBUG_PRINT(("Init:  Setting filename to %s for client %d\n", param2, client_id));
 					if ((client_id >=0) && (client_id <MAX_CLIENTS)) {
-                            clients[client_id].filename = param2;
+                            strncpy(clients[client_id].filename, param2, sizeof(clients[client_id].filename));
                     }
+           
+                    
 					break;
 				case 3:
 					MDEBUG_PRINT(("Init:  Setting Packet Delay and Packet drop\n"));
@@ -106,12 +109,13 @@ void init( struct client *clients, int *num_clients, int *timeout)
                             clients[client_id].packet_delay = packet_delay;
                             clients[client_id].packet_drop_percentage = packet_drop_percentage;
                     }
+
 					break;
                 case 4:
 					MDEBUG_PRINT(("Init:  Setting download tasks\n"));
 					client_id = atoi(param1);
 					if ((client_id >=0) && (client_id <MAX_CLIENTS)) {
-                            clients[client_id].filename = param2;
+                            strncpy(clients[client_id].filename, param2, sizeof(clients[client_id].filename));
                             clients[client_id].task_start_time = atoi(param3);
                             clients[client_id].task_share = atoi(param4);
 					}
@@ -125,7 +129,9 @@ void init( struct client *clients, int *num_clients, int *timeout)
                 }
 			}
 		}
+    //*bar = *clients;
     MDEBUG_PRINT(("Init:  Closing file\n"));
+
     // Close file
 	fclose(in_file);
 }

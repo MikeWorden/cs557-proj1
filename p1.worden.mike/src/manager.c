@@ -86,7 +86,6 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
                 {
                     launch_client(manager_port,  i);
                     MDEBUG_PRINT(("Manager:  Client %d spawned child process %d successfully!\n", i, getpid()));
-                    //sleep (5);
                     return ;
                 } else if (client_pid < 0) {
                     perror("Manager:  Forking Client Error!\n");

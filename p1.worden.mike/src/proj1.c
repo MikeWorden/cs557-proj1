@@ -10,10 +10,14 @@ int main(int argc, char *argv[]) {
     int num_clients = 0;
     int timeout = 0;
     int management_port = 0;
-
-
+ 
+    
+    
+    
+        
+  
     init( clients, &num_clients, &timeout);
-
+    
 
     launch_manager(clients, &num_clients, &timeout, &management_port);
 

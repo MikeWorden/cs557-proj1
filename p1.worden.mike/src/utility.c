@@ -59,8 +59,8 @@ void copy_client(struct client *from_client, struct client *to_client) {
 
     to_client->enabled = from_client->enabled;
     to_client->configured = from_client->configured;
-    to_client->filename = malloc(strlen(from_client->filename)+1);
-    strcpy(to_client->filename, from_client->filename);
+    
+    strncpy(to_client->filename, from_client->filename, sizeof(to_client->filename));
     to_client->has_task = from_client->has_task;
     to_client->node_id =  from_client->node_id;
     to_client->packet_delay = from_client->packet_delay;
@@ -136,8 +136,9 @@ void client_record_deserialization(char struct_data[5000], struct client *client
     client_record->task_share=(int)strtol(field[5],NULL,10);
     client_record->task_start_time=(int)strtol(field[6],NULL,10);
     client_record->tracker_port = (int)strtol(field[7], NULL, 10);
-    client_record->filename = malloc(strlen(field[7]) +1 );
-    client_record->filename = field[7];
+    //client_record->filename = malloc(strlen(field[7]) +1 );
+    strncpy(client_record->filename, field[7], sizeof(client_record->filename));
+    
 
 
 }

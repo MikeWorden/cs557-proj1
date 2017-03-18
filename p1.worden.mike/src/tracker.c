@@ -165,7 +165,7 @@ void launch_tracker( int manager_port) {
 /******************************************************************************
 * tracker_connection_handler:  Kinda superfulous;
 *
-******************************************************************************/
+******************************************************************************
 void *tracker_connection_handler(void *socket_desc)
 {
     //Get the socket descriptor
@@ -204,4 +204,4 @@ void *tracker_connection_handler(void *socket_desc)
     free(socket_desc);
 
     return 0;
-}
+}*/

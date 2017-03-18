@@ -257,7 +257,7 @@ void EventQueue::Eq_Print()
 {
 	event *e = head_;
 	for (; (e); e = e->next_){
-		printf("time=%ld:%06ld type=%d\n",e->tv_.tv_sec,e->tv_.tv_usec,e->type_);
+		printf("time=%ld:%06d type=%d\n",e->tv_.tv_sec,e->tv_.tv_usec,e->type_);
 	}
 }
 

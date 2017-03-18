@@ -39,7 +39,7 @@
 # define MDEBUG_PRINT(x) do {} while (0)
 #endif
 
-#define TRACKER_DEBUG 1
+//#define TRACKER_DEBUG 1
 #ifdef TRACKER_DEBUG
 # define TDEBUG_PRINT(x) printf x
 #else
@@ -48,7 +48,7 @@
 
 
 
-// #define CLIENT_DEBUG 1
+//#define CLIENT_DEBUG 1
 #ifdef CLIENT_DEBUG
 # define CDEBUG_PRINT(x) printf x
 #else
@@ -69,7 +69,7 @@ struct client {
         bool configured;
 		int  packet_delay;
 		int  packet_drop_percentage;
-		char *filename;
+		char filename[256];
 		bool has_task;
 		int  task_start_time;
 		int  task_share;
