@@ -341,7 +341,7 @@ handle Timers::AddTimer(int timeout, TimerCallback *cb)
 bool Timers::RemoveTimer(handle hdl)
 {
 	event *e;
-	TimerEntry *entry = NULL;
+	TimerEntry *entry;
 	bool found = false;
 
 	// Find the timer in the queue

@@ -1,6 +1,89 @@
 
 #include "../include/manager.h"
 
+unsigned char * serialize_int(unsigned char *buffer, int value)
+{
+    /* Write big-endian int value into buffer; assumes 32-bit int and 8-bit char. */
+    buffer[0] = value >> 8;
+    buffer[1] = value;
+    return buffer + 2;
+}
+
+unsigned char * deserialize_int(unsigned char *buffer, int *value) {
+    
+    *value = buffer[0]<<8;
+    *value = *value + buffer[1];
+    return buffer + 2;
+    
+}
+unsigned char * serialize_char(unsigned char *buffer, char value)
+{
+    buffer[0] = value;
+    return buffer + 1;
+}
+
+unsigned char * deserialize_char(unsigned char *buffer, char *value) {
+    *value = buffer[0];
+    return buffer+1;
+    
+}
+unsigned char * serialize_group_req(unsigned char *buffer, struct group_show_interest *gsi)
+{
+    buffer=serialize_int(buffer, gsi->msgtype);
+    buffer=serialize_int(buffer, gsi->node_id);
+    buffer=serialize_int(buffer, gsi->numfiles);
+    for (int i=0; i<sizeof(gsi->filename); i++)
+        buffer=serialize_char(buffer, gsi->filename[i]);
+    buffer=serialize_int(buffer, gsi->type);
+    buffer=serialize_int(buffer, gsi->client_port);
+    return buffer;
+}
+int deserialize_group_req(unsigned char *buffer, struct group_show_interest *gsi) {
+    buffer=deserialize_int(buffer, &gsi->msgtype);
+    buffer=deserialize_int(buffer, &gsi->node_id);
+    buffer=deserialize_int(buffer, &gsi->numfiles);
+    for (int i=0; i<sizeof(gsi->filename); i++)
+        buffer=deserialize_char(buffer, &gsi->filename[i]);
+    buffer=deserialize_int(buffer, &gsi->type);
+    buffer=deserialize_int(buffer, &gsi->client_port);
+    return 0;
+    
+}
+
+void serialize_group_assign (unsigned char *buffer, struct group_assign *ga) {
+
+    buffer= serialize_int(buffer, ga->msgtype);
+    buffer=serialize_int(buffer, ga->num_files);
+    for (int i=0;i<sizeof(ga->filename); i++)
+        buffer=serialize_char(buffer, ga->filename[i]);
+    buffer=serialize_int(buffer, ga->num_neighbors);
+    for (int i = 0; i<MAX_CLIENTS; i++) {
+        buffer=serialize_int(buffer, ga->neighbor_id[i]);
+        for (int j=0; j<sizeof(ga->neighbor_ip[i]); j++)
+            buffer = serialize_char(buffer, (char)ga->neighbor_ip[i][j]);
+        buffer=serialize_int(buffer, ga->neighbor_port[i]);
+    }
+    
+    
+}
+
+
+void deserialize_group_assign(unsigned char *buffer, struct group_assign *ga) {
+    buffer = deserialize_int(buffer, &ga->msgtype);
+    buffer = deserialize_int(buffer, &ga->num_files);
+    for (int i=0;i<sizeof(ga->filename); i++)
+        buffer=deserialize_char(buffer, &ga->filename[i]);
+    buffer=deserialize_int(buffer, &ga->num_neighbors);
+    for (int i = 0; i<MAX_CLIENTS; i++) {
+        buffer=deserialize_int(buffer, &ga->neighbor_id[i]);
+        for (int j=0; j<sizeof(ga->neighbor_ip[i]); j++)
+            buffer = deserialize_char(buffer, (char *)&ga->neighbor_ip[i][j]);
+        buffer=deserialize_int(buffer, &ga->neighbor_port[i]);
+    }
+
+    
+    
+}
 
 /******************************************************************************
 * create_log:   Initialize our logfile
@@ -34,11 +117,37 @@ void log_entry(char *file_name, char *message ) {
     fclose(fp);
 }
 
+
+/******************************************************************************
+ * log_entry:   Append to our logfiles
+ ******************************************************************************/
+
+void log_hex_entry(char *file_name, char hex_message[], int size ) {
+    
+    
+  
+    FILE *fp = fopen(file_name, "ab");
+    if (!fp) {
+        perror("Error appending to  logfile!\n");
+        
+    }
+    
+    for (int i=0; i<size; i++) {
+        //log_ptr += sprintf(log_message, "%02x ",  hex_message[i]);
+        fprintf(fp, "%02x ", hex_message[i]);
+    }
+    
+    fprintf(fp, "\n");
+    
+    fclose(fp);
+}
+
 /******************************************************************************
 * debug_print_client:   Utility function to print out client
 *
 ******************************************************************************/
 void debug_print_client(struct client *client) {
+    DEBUG_PRINT(("\nNode ID:  %d\n", client->node_id));
     DEBUG_PRINT(("Enabled:  %d\n", client->enabled));
     DEBUG_PRINT(("Configured:  %d\n", client->configured));
     DEBUG_PRINT(("Filename:  %s\n", client->filename));
@@ -48,6 +157,8 @@ void debug_print_client(struct client *client) {
     DEBUG_PRINT(("Packet_Drop_Percentage:  %d\n", client->packet_drop_percentage));
     DEBUG_PRINT(("Task_Share:  %d\n", client->task_share));
     DEBUG_PRINT(("Task_Start_Time:  %d\n", client->task_start_time));
+    DEBUG_PRINT(("Tracker Port:  %d\n", client->tracker_port));
+    DEBUG_PRINT(("Node Port:  %d\n", client->node_port));
 }
 
 /******************************************************************************
@@ -67,6 +178,8 @@ void copy_client(struct client *from_client, struct client *to_client) {
     to_client->packet_drop_percentage = from_client->packet_drop_percentage;
     to_client->task_share = from_client->task_share;
     to_client->task_start_time = from_client->task_start_time;
+    to_client->tracker_port = from_client->tracker_port;
+    to_client->node_port = from_client->node_port;
 
 }
 
@@ -100,10 +213,11 @@ bool terminate_manager_check (struct client_args *clients) {
 void client_record_serialization(char struct_data[5000], struct client *client_record){
 
 // Hate sprintf!
-    int foo=7;
-sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_record->has_task,
+    
+    sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_record->has_task,
     client_record->node_id,client_record->packet_delay, client_record->packet_drop_percentage,client_record->task_share,
-    client_record->task_start_time, foo, client_record->filename);
+    client_record->task_start_time, client_record->tracker_port, client_record->node_port, client_record->filename);
+    //printf("%s\n",struct_data);
 
 }
 
@@ -113,7 +227,7 @@ sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, clie
 ******************************************************************************/
 void client_record_deserialization(char struct_data[5000], struct client *client_record){
 
-    char *field[9];
+    char *field[10];
     int index = 0;
 
     char *token;
@@ -122,12 +236,12 @@ void client_record_deserialization(char struct_data[5000], struct client *client
 
     while (token != NULL)
     {
-        //printf ("%s\n",token);
+        //printf("%s ", token);
         field[index] = token;
         index++;
-        token = strtok (NULL, " ,.|");
+        token = strtok (NULL, " |");
     }
-
+    //printf("\n");
     client_record->enabled=strtol(field[0],NULL,10);
     client_record->has_task=strtol(field[1],NULL,10);
     client_record->node_id=(int)strtol(field[2],NULL,10);
@@ -136,9 +250,11 @@ void client_record_deserialization(char struct_data[5000], struct client *client
     client_record->task_share=(int)strtol(field[5],NULL,10);
     client_record->task_start_time=(int)strtol(field[6],NULL,10);
     client_record->tracker_port = (int)strtol(field[7], NULL, 10);
-    //client_record->filename = malloc(strlen(field[7]) +1 );
-    strncpy(client_record->filename, field[7], sizeof(client_record->filename));
+    client_record->node_port = (int)strtol(field[8], NULL, 10);
+    strncpy(client_record->filename, field[9], sizeof(client_record->filename));
     
 
 
 }
+
+

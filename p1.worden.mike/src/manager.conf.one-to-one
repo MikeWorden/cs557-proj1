@@ -1,13 +1,16 @@
 # Sample config file for CS557 Project A - Spring 2015
 # Number of clients (nodes)
 # (Assign node ID sequentially starting from 0)
-2
+10
 # Request timeout in seconds
 5
 # Packet delay and drop probability
 #Node ID Packet delay (in msec) Packet drop probability
 0 10 0
 1 10 0
+2 300 0
+3 20 0
+4 20 0
 -1 0 0
 #termination of list
 # Specify which node will have which files initially
@@ -15,11 +18,11 @@
 1 /csu/cs557/foo.mpg
 -1 ---
 # Specify the download tasks
-# This is specified by download start time (in seconds from the
+# This is specified by download start time (in seconds from the 
 # start of simulation), file name, and share (1 for sharing, and 0
 # for not sharing)
-#NODE ID Filename StartTime Share
-0 /csu/cs557/foo.mpg 10 1
-1 /csu/cs557/foo.mpg 15 0
+# NODE ID Filename StartTime Share
+1 /csu/cs557/foo.mpg 10 1
+2 /csu/cs557/foo.mpg 15 0
 -1 --- -1 -1
-#End of list
+#End of list#End of list

@@ -13,6 +13,9 @@
 		0F8BD0091E79A725003DF33A /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0041E79A725003DF33A /* utility.c */; };
 		0F8BD00A1E79A725003DF33A /* init.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD0051E79A725003DF33A /* init.c */; };
 		0F8BD00F1E79A7E2003DF33A /* proj1.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8BD00E1E79A7E2003DF33A /* proj1.c */; };
+		0FE1A95D1E7DFD000083620B /* tools.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FE1A95C1E7DFD000083620B /* tools.cc */; };
+		0FE1A9601E7DFD300083620B /* timers.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FE1A95E1E7DFD300083620B /* timers.cc */; };
+		0FE1A9631E7DFD570083620B /* timers-c.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FE1A9621E7DFD570083620B /* timers-c.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,6 +39,12 @@
 		0F8BD0051E79A725003DF33A /* init.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = init.c; path = src/init.c; sourceTree = "<group>"; };
 		0F8BD00B1E79A739003DF33A /* manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = manager.h; path = include/manager.h; sourceTree = "<group>"; };
 		0F8BD00E1E79A7E2003DF33A /* proj1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = proj1.c; path = src/proj1.c; sourceTree = "<group>"; };
+		0FE1A95B1E7DFCE60083620B /* tools.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tools.hh; path = timers/tools.hh; sourceTree = "<group>"; };
+		0FE1A95C1E7DFD000083620B /* tools.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tools.cc; path = timers/tools.cc; sourceTree = "<group>"; };
+		0FE1A95E1E7DFD300083620B /* timers.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = timers.cc; path = timers/timers.cc; sourceTree = "<group>"; };
+		0FE1A95F1E7DFD300083620B /* timers.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = timers.hh; path = timers/timers.hh; sourceTree = "<group>"; };
+		0FE1A9611E7DFD570083620B /* timers-c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "timers-c.h"; path = "timers/timers-c.h"; sourceTree = "<group>"; };
+		0FE1A9621E7DFD570083620B /* timers-c.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "timers-c.cc"; path = "timers/timers-c.cc"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +108,12 @@
 		0FE1A95A1E7DA8210083620B /* timer */ = {
 			isa = PBXGroup;
 			children = (
+				0FE1A9611E7DFD570083620B /* timers-c.h */,
+				0FE1A9621E7DFD570083620B /* timers-c.cc */,
+				0FE1A95E1E7DFD300083620B /* timers.cc */,
+				0FE1A95F1E7DFD300083620B /* timers.hh */,
+				0FE1A95C1E7DFD000083620B /* tools.cc */,
+				0FE1A95B1E7DFCE60083620B /* tools.hh */,
 			);
 			name = timer;
 			sourceTree = "<group>";
@@ -161,9 +176,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F8BD00F1E79A7E2003DF33A /* proj1.c in Sources */,
+				0FE1A9601E7DFD300083620B /* timers.cc in Sources */,
+				0FE1A95D1E7DFD000083620B /* tools.cc in Sources */,
 				0F8BD00A1E79A725003DF33A /* init.c in Sources */,
 				0F8BD0071E79A725003DF33A /* client.c in Sources */,
 				0F8BD0061E79A725003DF33A /* manager.c in Sources */,
+				0FE1A9631E7DFD570083620B /* timers-c.cc in Sources */,
 				0F8BD0091E79A725003DF33A /* utility.c in Sources */,
 				0F8BD0081E79A725003DF33A /* tracker.c in Sources */,
 			);

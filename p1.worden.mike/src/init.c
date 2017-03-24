@@ -58,7 +58,7 @@ void init( struct client *clients, int *num_clients, int *timeout)
         clients[i].packet_delay = -1;
         clients[i].packet_drop_percentage = 100;
         clients[i].task_share = 0;
-        clients[i].task_start_time = 1;
+        clients[i].task_start_time = -1;
     }
 
 	in_file = fopen(FILE_NAME, "r");
@@ -115,9 +115,13 @@ void init( struct client *clients, int *num_clients, int *timeout)
 					MDEBUG_PRINT(("Init:  Setting download tasks\n"));
 					client_id = atoi(param1);
 					if ((client_id >=0) && (client_id <MAX_CLIENTS)) {
+                            //for (char* p = param2	; (p = strchr(p, '/')); ++p) {
+                            //    *p = '_';
+                            //}
                             strncpy(clients[client_id].filename, param2, sizeof(clients[client_id].filename));
                             clients[client_id].task_start_time = atoi(param3);
                             clients[client_id].task_share = atoi(param4);
+                            clients[client_id].has_task = true;
 					}
                     MDEBUG_PRINT(("Init:  Setting Client ID %d to share filename %s at startTime %d sharing %d\n",
                     client_id, param2, atoi(param3), atoi(param4)));

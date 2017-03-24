@@ -206,8 +206,10 @@ void *manager_connection_handler(void *args)
                 // (Necessary for reliable transport of a variable-sized struct)
                 // Note:  Only works for send/recieve on litte-endian systems
                 client_record = clients->client_list[index];
+                client_record.tracker_port = tracker_port;
                 client_record_serialization(buffer, &client_record);
-                
+                MDEBUG_PRINT(("Manager:   Sending %s\n", buffer));
+                              
                 // Now that we have a byte stream, we know how big our struct is.  (Hint it's always 5000 bytes)
                 // And we can write it.
                 write(sock, buffer, sizeof(buffer));
@@ -217,17 +219,18 @@ void *manager_connection_handler(void *args)
         
         //recieve a message from a client
         if (strstr(client_message, client_hello) != NULL) {
-            MDEBUG_PRINT(("INSIDE client logic\n"));
+       
             
             // Get the tracker port from the Hello Message
             client_id = (int) strtol(client_message,NULL,10);
             MDEBUG_PRINT(("Manager:  Client ID:   %d connected\n", client_id));
             
             if ((client_id >= 0) && (client_id<MAX_CLIENTS)) {
-                MDEBUG_PRINT(("Sending Client_ID Record %d\n",client_id));
+                MDEBUG_PRINT(("Manager:  Sending Client_ID Record %d\n",client_id));
                 // Initialize the buffer
                 memset(buffer, '\0', sizeof(buffer));
                 client_record = clients->client_list[client_id];
+                client_record.tracker_port = tracker_port;
                 client_record_serialization(buffer, &client_record);
                 
                 // Now that we have a byte stream, we know how big our struct is.  (Hint it's always 5000 bytes)

@@ -55,7 +55,7 @@ int
 Timers_AddTimer(int timeout, TimerCallback_t cb_fp, void *p)
 {
 	TimersCCallback *cb = new TimersCCallback(cb_fp, p);
-	return (int)timers.AddTimer(timeout, cb);
+	return timers.AddTimer(timeout, cb);
 }
 
 int
