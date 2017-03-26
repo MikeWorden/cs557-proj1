@@ -117,6 +117,7 @@ void launch_manager(struct client *clients, int *num_clients, int *timeout, int 
         
         while( (!terminate_manager) && (client_sock = accept(socket_desc, NULL, NULL)) )
         {
+            
             MDEBUG_PRINT(("Manager:  Connection accepted by Manager\n"));
 
             pthread_t manager_thread;

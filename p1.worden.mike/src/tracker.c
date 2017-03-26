@@ -25,9 +25,9 @@ void connect_to_manager(int manager_port, int tracker_port, struct client client
     int index = 0;
     
     struct timeval timeout;
-    timeout.tv_sec = 2;  /* 5 Secs Timeout */
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
-
+    
 
 
     client_sockfd = socket(AF_INET, SOCK_STREAM,0);
@@ -117,13 +117,15 @@ void update_group_assign(struct group_assign ga[], struct group_show_interest gr
     if (gr.type == GROUP_REQ_NO_SHARE) {
         return;
     }
-    
+    // File is already in group list; node is alread in neighbor list
     for  (int i=0; i<MAX_FILES; i++) {
         if (strcmp(ga[i].filename, gr.filename) ==0) {
             for (int j=0; j<ga[i].num_neighbors; j++) {
                 if(ga[i].neighbor_id[j] == gr.node_id)
                     updated=true;
+                
             }
+            //File is already in group list; adding a new neighbor
             if (!updated) {
                 ga[i].neighbor_id[ga[i].num_neighbors] = gr.node_id;
                 ga[i].neighbor_port[ga[i].num_neighbors] = gr.client_port;
@@ -134,6 +136,7 @@ void update_group_assign(struct group_assign ga[], struct group_show_interest gr
             }
         } 
     }
+    //File is not in the list; adding file and first neighbor
     for (int i=0; i<MAX_FILES; i++) {
         if ((ga[i].num_files == 0) && !(updated)) {
             ga[i].num_files =1;
@@ -141,7 +144,7 @@ void update_group_assign(struct group_assign ga[], struct group_show_interest gr
             ga[i].neighbor_id[0] = gr.node_id;
             ga[i].neighbor_port[0] = gr.client_port;
             for (int j =0; j<4; j++)
-                ga[i].neighbor_ip[ga[i].num_neighbors][j] = (int)gr.ip_address[j];
+                ga[i].neighbor_ip[0][j] = (int)gr.ip_address[j];
             ga[i].num_neighbors=1;
             updated=true;
         }
@@ -152,9 +155,9 @@ void update_group_assign(struct group_assign ga[], struct group_show_interest gr
  ******************************************************************************/
 void find_group_assign(struct group_assign ga[], struct group_show_interest gr, int* index) {
     *index=0;
-    
+    printf("Finding group assign for node %d\n", gr.node_id);
     for (int i=0; i<MAX_FILES; i++) {
-        if (strcmp(ga[i].filename, gr.filename) ==0) {
+              if (strcmp(ga[i].filename, gr.filename) ==0) {
             *index = i;
         }
     }
@@ -198,6 +201,7 @@ void tracker_listener(int sockfd, struct client clients[], char *logfile)
     fd_set rset;
     char   client_buf[256];
     
+    
     char log_message[80];
     
     int maxfdpl, stdineof;
@@ -207,18 +211,30 @@ void tracker_listener(int sockfd, struct client clients[], char *logfile)
     socklen_t client_addr_length;
     struct group_show_interest group_request;
     struct group_assign group_assign_list[MAX_FILES];
+    int opt = 1;
+    static int elapsed_time =0;
     
+
+    
+    //set master socket to allow multiple connections ,
+    //this is just a good habit, it will work without this
+    if( setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,
+                   sizeof(opt)) < 0 )
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
     init_group_assign(group_assign_list);
     int index=0;
     
-
+    
     
     FILE *fp = fopen(logfile, "a");
     if (!fp) {
         perror("Error appending to  logfile!\n");
         
     }
-    printf("Tracker is listening\n");
+    
     
     stdineof = 0;
     FD_ZERO(&rset);
@@ -250,8 +266,9 @@ void tracker_listener(int sockfd, struct client clients[], char *logfile)
             /* This should not happen */
             fprintf(stderr, "Select returned %d\n", status);
         }else{
+            
             if (status == 0){
-                //fprintf(stderr, " Timer expired\n");
+                
                 /* Timer expired, Hence process it  */
                 Timers_ExecuteNextTimer();
                 /* Execute all timers that have expired.*/
@@ -262,57 +279,67 @@ void tracker_listener(int sockfd, struct client clients[], char *logfile)
                     Timers_NextTimerTime(&tmv);
                     
                 }
+
+                
+                //TDEBUG_PRINT(("Tracker: Timer == %d\n",elapsed_time ));
+                elapsed_time++;
             }
             if (status > 0){
                 /* The socket has received data.
                  Perform packet processing. */
-               
+                
                 if (FD_ISSET(sockfd, &rset)) {
                     bzero(client_buf, sizeof(client_buf));
                     client_addr_length = sizeof(client_addr);
+                    struct timeval timeout;
+                    timeout.tv_sec = 1;  /* 5 Secs Timeout */
+                    timeout.tv_usec = 0;
+                    
+                    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout,sizeof(struct timeval));
+
                     bytes_recieved = (int)recvfrom(sockfd, client_buf, sizeof(client_buf), 0,
                                                    (struct sockaddr *) &client_addr, &client_addr_length);
                     
                     if (bytes_recieved <0 ) {
-                        perror("Tracker:  Error in recvfrom\n");
-                    }
-                    TDEBUG_PRINT(("Tracker:   Got datagram of %d bytes from %s port %d\n", bytes_recieved, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port)));
+                        perror("Tracker Listener :  Error in recvfrom\n");
+                    } else {
+                        TDEBUG_PRINT(("Tracker:   Got datagram of %d bytes from %s port %d\n", bytes_recieved, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port)));
+                        
+                        
+                        deserialize_group_req((unsigned char *)client_buf, &group_request);
+                        ipstrtobyte(inet_ntoa(client_addr.sin_addr), group_request.ip_address);
+                        clients[group_request.node_id].node_port=group_request.client_port;
+                        sprintf(log_message, "%d    %d    %s\n", group_request.node_id, elapsed_time, group_request.filename);
+                        log_entry(logfile, log_message);
+                        
+                        
+                        
+                        TDEBUG_PRINT(("\n****************GROUP SHOW INTEREST***********************\n"));
+                        TDEBUG_PRINT(("Tracker:  msgtype is %d\n", group_request.msgtype));
+                        TDEBUG_PRINT(("Tracker:  node_id is %d\n", group_request.node_id));
+                        TDEBUG_PRINT(("Tracker:  numfiles is %d\n", group_request.numfiles));
+                        TDEBUG_PRINT(("Tracker:  Filename is %s\n", group_request.filename));
+                        TDEBUG_PRINT(("Tracker:  Type is %d\n", group_request.type));
+                        TDEBUG_PRINT(("Node Port is %d\n", group_request.client_port));
+                        TDEBUG_PRINT(("Tracker:  IP address is %d.%d.%d.%d\n",group_request.ip_address[0], group_request.ip_address[1], group_request.ip_address[2], group_request.ip_address[3]));
+                        
+                        
+                        update_group_assign(group_assign_list, group_request);
+                        find_group_assign(group_assign_list, group_request, &index);
+                        TDEBUG_PRINT(("Group Assign shows %d neighbors\n", group_assign_list[index].num_neighbors));
+                        for (int i=0; i<group_assign_list[index].num_neighbors; i++) {
+                            TDEBUG_PRINT(("TRACKER:  Neighbor[%d] Node ID is %d", i, group_assign_list[index].neighbor_id[i]));
+                            TDEBUG_PRINT(("TRACKER:  Neighbor[%d] IP Address is %d.%d.%d.%d\n", i, group_assign_list[index].neighbor_ip[i][0],group_assign_list[index].neighbor_ip[i][1], group_assign_list[index].neighbor_ip[i][2],group_assign_list[index].neighbor_ip[i][3] ));
+                        }
+                        bzero(client_buf, sizeof(client_buf));
+                        
+                        serialize_group_assign ((unsigned char *)client_buf, &group_assign_list[index]);
+                        
+                        
+                        log_hex_entry(logfile, client_buf, sizeof(client_buf));
+                        sendto(sockfd,client_buf,sizeof(client_buf), 0, (struct sockaddr *) &client_addr, client_addr_length);                    }
                     
-                    
-                    deserialize_group_req((unsigned char *)client_buf, &group_request);
-                    ipstrtobyte(inet_ntoa(client_addr.sin_addr), group_request.ip_address);
-                    clients[group_request.node_id].node_port=group_request.client_port;
-                    sprintf(log_message, "%d    %d    %s\n", group_request.node_id, 1, group_request.filename);
-                    log_entry(logfile, log_message);
-                    
-                    
-                    
-                    TDEBUG_PRINT(("\n****************GROUP SHOW INTEREST***********************\n"));
-                    TDEBUG_PRINT(("Tracker:  msgtype is %d\n", group_request.msgtype));
-                    TDEBUG_PRINT(("Tracker:  node_id is %d\n", group_request.node_id));
-                    TDEBUG_PRINT(("Tracker:  numfiles is %d\n", group_request.numfiles));
-                    TDEBUG_PRINT(("Tracker:  Filename is %s\n", group_request.filename));
-                    TDEBUG_PRINT(("Tracker:  Type is %d\n", group_request.type));
-                    TDEBUG_PRINT(("Node Port is %d\n", group_request.client_port));
-                    TDEBUG_PRINT(("Tracker:  IP address is %d.%d.%d.%d\n",group_request.ip_address[0], group_request.ip_address[1], group_request.ip_address[2], group_request.ip_address[3]));
-                    
-                    
-                    update_group_assign(group_assign_list, group_request);
-                    find_group_assign(group_assign_list, group_request, &index);
-                    bzero(client_buf, sizeof(client_buf));
-                    serialize_group_assign ((unsigned char *)client_buf, &group_assign_list[index]);
-                                        
-                    
-                    log_hex_entry(logfile, client_buf, sizeof(client_buf));
-                    sendto(sockfd,client_buf,sizeof(client_buf), MSG_EOR, (struct sockaddr *) &client_addr, client_addr_length);
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                 
+
                 }
                 
             }
@@ -320,9 +347,8 @@ void tracker_listener(int sockfd, struct client clients[], char *logfile)
     }
     return;
 }
-         
-         
-         
+
+
 
 /******************************************************************************
 * launch_tracker:  Initialize the tracker process
@@ -404,7 +430,7 @@ void launch_tracker( int manager_port) {
     int (*tpt)();   /* Define a pointer to the function */
     tpt = TrackerProcessTimer;  /* Gets the address of ProcessTimer */
 
-    Timers_AddTimer(3000 ,tpt,(int*)99);
+    Timers_AddTimer(1000 ,tpt,(int*)99);
     //TDEBUG_PRINT(("Done connecting to manager and launching tracker listener\n"));
     tracker_listener(socket_desc, tracker_clients, log_file);
 

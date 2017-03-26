@@ -83,6 +83,7 @@ _a > _b ? _a : _b; })
 #define FILE_BUF_RECORDS 625
 #define MAX_FILE_SIZE 20000
 #define MAX_FILES 1
+#define MAX_TASKS 2
 
 // Basic struct to manage each client
 struct client {
@@ -96,7 +97,10 @@ struct client {
 		int  task_start_time;
 		int  task_share;
         int  tracker_port;
-    int  node_port;
+    
+        int  node_port;
+        int  num_tasks;
+        char taskname[MAX_TASKS][256];
 };
 
 // Struct to pass data to the connection manager on the manager process
@@ -107,6 +111,14 @@ struct client_args {
         int           manager_port;
 };
 
+
+struct file_record {
+    int record_number;
+    int num_records;
+    int filesize;
+    char filename[256];
+    unsigned char buf[32];
+};
 
 struct group_show_interest {
     
@@ -149,8 +161,11 @@ unsigned char * serialize_group_req(unsigned char *buffer, struct group_show_int
 int deserialize_group_req(unsigned char *buffer, struct group_show_interest *gsi);
 
 void serialize_group_assign (unsigned char *buffer, struct group_assign *ga);
-void deserialize_group_assign(unsigned char *buffer, struct group_assign *ga);
-
+void deserialize_group_assign(unsigned char *buffer, struct group_assign *ga, int node_id);
+unsigned char * serialize_int(unsigned char *buffer, int value);
+unsigned char * serialize_char(unsigned char *buffer, char value);
+void serialize_record(unsigned char *buffer, struct file_record *fr);
+void deserialize_record(unsigned char *buffer, struct file_record *fr);
 
 bool terminate_manager_check (struct client_args *clients);
 

@@ -27,6 +27,19 @@ unsigned char * deserialize_char(unsigned char *buffer, char *value) {
     return buffer+1;
     
 }
+
+unsigned char * serialize_unsigned_char(unsigned char *buffer, unsigned char value)
+{
+    buffer[0] = value;
+    return buffer + 1;
+}
+
+unsigned char * deserialize_unsigned_char(unsigned char *buffer, unsigned char *value) {
+    *value = buffer[0];
+    return buffer+1;
+    
+}
+
 unsigned char * serialize_group_req(unsigned char *buffer, struct group_show_interest *gsi)
 {
     buffer=serialize_int(buffer, gsi->msgtype);
@@ -68,20 +81,63 @@ void serialize_group_assign (unsigned char *buffer, struct group_assign *ga) {
 }
 
 
-void deserialize_group_assign(unsigned char *buffer, struct group_assign *ga) {
+void deserialize_group_assign(unsigned char *buffer, struct group_assign *ga, int node_id) {
+    int new_node_id;
+    unsigned char new_neighbor_ip[4];
+    int new_node_port;
+    int num_neighbors = 0;
+    int index =0;
+    
     buffer = deserialize_int(buffer, &ga->msgtype);
     buffer = deserialize_int(buffer, &ga->num_files);
     for (int i=0;i<sizeof(ga->filename); i++)
         buffer=deserialize_char(buffer, &ga->filename[i]);
-    buffer=deserialize_int(buffer, &ga->num_neighbors);
-    for (int i = 0; i<MAX_CLIENTS; i++) {
-        buffer=deserialize_int(buffer, &ga->neighbor_id[i]);
-        for (int j=0; j<sizeof(ga->neighbor_ip[i]); j++)
-            buffer = deserialize_char(buffer, (char *)&ga->neighbor_ip[i][j]);
-        buffer=deserialize_int(buffer, &ga->neighbor_port[i]);
-    }
-
+    buffer=deserialize_int(buffer, &num_neighbors);
     
+    for (int i = 0; i<num_neighbors; i++) {
+        buffer=deserialize_int(buffer, &new_node_id);
+        for (int j=0; j<sizeof(new_neighbor_ip); j++)
+            buffer = deserialize_char(buffer, (char *)&new_neighbor_ip[j]);
+        buffer=deserialize_int(buffer, &new_node_port);
+        if (new_node_id != node_id) {
+            ga->neighbor_id[index] = new_node_id;
+            for (int j=0; j<sizeof(ga->neighbor_ip[index]); j++)
+                strcpy((char *)&ga->neighbor_ip[index][j], (char *) &new_neighbor_ip[j]);
+            ga->neighbor_port[i] = new_node_port;
+            index++;
+        }
+    }
+    ga->num_neighbors = index;
+}
+
+void serialize_record(unsigned char *buffer, struct file_record *fr) {
+    buffer=serialize_int(buffer, fr->record_number);
+    buffer=serialize_int(buffer, fr->num_records);
+    buffer=serialize_int(buffer, fr->filesize);
+    
+  
+    for (int i=0; i<sizeof(fr->buf); i++) {
+        //printf("%c", fr->buf[i]);
+        buffer=serialize_unsigned_char(buffer, fr->buf[i]);
+    }
+    for (int i=0; i<sizeof(fr->filename); i++)
+        buffer=serialize_char(buffer, fr->filename[i]);
+    
+}
+
+void deserialize_record(unsigned char *buffer, struct file_record *fr) {
+    buffer=deserialize_int(buffer, &fr->record_number);
+    buffer=deserialize_int(buffer, &fr->num_records);
+    buffer=deserialize_int(buffer, &fr->filesize);
+
+    bzero(fr->buf, sizeof(fr->buf));
+    for (int i=0; i<sizeof(fr->buf); i++) {
+        buffer=deserialize_unsigned_char(buffer,&fr->buf[i]);
+       // printf("%c", fr->buf[i]);
+    }
+    bzero(fr->filename, sizeof(fr->filename));
+    for (int i=0; i<sizeof(fr->filename); i++)
+        buffer=deserialize_char(buffer, &fr->filename[i]);
     
 }
 
@@ -214,9 +270,9 @@ void client_record_serialization(char struct_data[5000], struct client *client_r
 
 // Hate sprintf!
     
-    sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%d|%s", client_record->enabled, client_record->has_task,
+    sprintf (struct_data, "%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%d|%s|%s", client_record->enabled, client_record->has_task,
     client_record->node_id,client_record->packet_delay, client_record->packet_drop_percentage,client_record->task_share,
-    client_record->task_start_time, client_record->tracker_port, client_record->node_port, client_record->filename);
+    client_record->task_start_time, client_record->tracker_port, client_record->node_port, client_record->filename, client_record->num_tasks, client_record->taskname[0], client_record->taskname[1]);
     //printf("%s\n",struct_data);
 
 }
@@ -227,7 +283,7 @@ void client_record_serialization(char struct_data[5000], struct client *client_r
 ******************************************************************************/
 void client_record_deserialization(char struct_data[5000], struct client *client_record){
 
-    char *field[10];
+    char *field[13];
     int index = 0;
 
     char *token;
@@ -252,8 +308,9 @@ void client_record_deserialization(char struct_data[5000], struct client *client
     client_record->tracker_port = (int)strtol(field[7], NULL, 10);
     client_record->node_port = (int)strtol(field[8], NULL, 10);
     strncpy(client_record->filename, field[9], sizeof(client_record->filename));
-    
-
+    client_record->num_tasks = (int)strtol(field[10], NULL, 10);
+    strncpy(client_record->taskname[0], field[11], sizeof(client_record->taskname[0]));
+    strncpy(client_record->taskname[1], field[12], sizeof(client_record->taskname[1]));
 
 }
 
